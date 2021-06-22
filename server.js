@@ -1,10 +1,11 @@
 const express = require('express');
 const app = express();
 require('dotenv').config() // Importing the DotENV Config
+require('./models/connection') // Import mongoose connection
+const routes = require(`./routes/index`) // All Routes
 
-app.get('/',(req,res) => { 
-   res.send("<h3>Application Started</h3>")
-})
+//routes  
+app.use('/',routes);
 
 
 app.listen(process.env.PORT , () => { 

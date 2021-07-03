@@ -2,6 +2,6 @@ const router = require(`express`).Router();
 
 const recordController = require('../controllers/records')
 
-router.get('/', recordController.getRecords)
+router.post('/account', recordController.addAccount)
 
 module.exports = router;

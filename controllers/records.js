@@ -1,6 +1,7 @@
 const accounts = require('../models/schema/records/accounts');
 
-exports.getRecords =(req,res) => {
-  console.log(`reached the get of records`)
+exports.addAccount =(req,res) => {
+  console.log(req.body)
+  console.log(`reached account`)
 }
 

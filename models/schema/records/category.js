@@ -1,28 +1,26 @@
 const mongoose = require('mongoose');
 
-const accountSchema = new mongoose.Schema({
+const categorySchema = new mongoose.Schema({
   name: {
     type:String,
     required:true,
   },
-  color: { 
+  icon: { 
     type:String,
   },
-  type: { 
+  status: { 
     type:String,
-    required:true,
-  }, 
-  startBalance: {
-    type:Number,
-  },
-  currency: {
-    type:String,
-    required:true
+    default:'Custom'
   },
   lastUpdated: { 
     type:Date,
     default:Date.now()
-  }
+  },
+   userId: {
+    type:String,
+    required:true
+  },
+
 })
 
 mongoose.set('toJSON', {
@@ -32,4 +30,4 @@ mongoose.set('toJSON', {
   }
 });
 
-module.exports = mongoose.model(`account`,accountSchema);
+module.exports = mongoose.model(`category`,categorySchema);

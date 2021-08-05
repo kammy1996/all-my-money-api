@@ -5,7 +5,7 @@ verifyToken = (req,res,next) => {
   if(!token) return res.status(401).send(`user Token not Provided`);
   try {
     const verified = jwt.verify(token,process.env.JWT_SECRET);
-    req.user = verified;
+    req.user = verified.user;
     next()
   }
   catch(err) {

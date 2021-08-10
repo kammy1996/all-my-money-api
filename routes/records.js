@@ -10,5 +10,9 @@ router.post('/category', verifyToken, recordController.addCategory)
 router.put('/category', verifyToken, recordController.updateCategory)
 router.get('/category', verifyToken, recordController.getCategories)
 router.delete('/category', verifyToken, recordController.deleteCategory)
+router.post('/label', verifyToken, recordController.addLabel)
+router.get('/label', verifyToken, recordController.getLabels)
+router.put('/label', verifyToken, recordController.updateLabel)
+router.delete('/label', verifyToken, recordController.deleteLabel)
 
 module.exports = router;

@@ -1,5 +1,6 @@
 const Account = require('../models/schema/records/account');
 const Category = require('../models/schema/records/category');
+const Label = require('../models/schema/records/label');
 
 
 exports.addAccount =(req,res) => {
@@ -82,8 +83,6 @@ exports.updateCategory =(req,res) => {
   const categoryId = req.query.id;
   const userId = req.user;
 
-  console.l
-
   Category.findOneAndUpdate({userId: userId, _id : categoryId}, {
       name: category.name,
       icon:category.icon,
@@ -119,5 +118,64 @@ exports.deleteCategory = (req,res) => {
     res.status(201).json(docs)
   })
 }
+
+exports.addLabel = (req,res) => { 
+  const label = req.body.label;
+  const userId = req.user;
+
+  const newLabel = new Label({
+    name:label.name,
+    color:label.color,
+    userId: userId
+  })
+
+  newLabel.save((err,label) => { 
+    if(err)throw err; 
+    res.status(200).json(label)
+  })
+
+}
+
+exports.getLabels = (req,res) => { 
+  const userId = req.user;
+
+  Label.find({ userId : userId}, (err,labels) => { 
+    if(err)throw err; 
+     res.status(200).json(labels) 
+  })
+}
+
+exports.updateLabel =(req,res) => { 
+  console.log(`reached label`)
+  const label = req.body.label;
+  const labelId = req.query.id;
+  const userId = req.user;
+
+  Label.findOneAndUpdate({userId: userId, _id : labelId}, {
+      name: label.name,
+      color:label.color,
+      lastUpdated:Date.now()
+    },(err,docs) => {
+    if(err) throw err; 
+    if(docs) { 
+      Label.findOne({_id:docs._id},(err,label) => {  
+        if(err) throw err;
+        res.status(201).json(label);
+      })
+    }
+    
+  })  
+} 
+
+exports.deleteLabel = (req,res) => { 
+  const labelId = req.query.id;
+  const userId = req.user;
+
+  Label.deleteOne({userId:userId, _id : labelId}, (err,docs) => {
+    if(err)throw err; 
+    res.status(201).json(docs)
+  })
+}
+
 
 

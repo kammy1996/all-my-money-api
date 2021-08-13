@@ -14,5 +14,6 @@ router.post('/label', verifyToken, recordController.addLabel)
 router.get('/label', verifyToken, recordController.getLabels)
 router.put('/label', verifyToken, recordController.updateLabel)
 router.delete('/label', verifyToken, recordController.deleteLabel)
+router.post('/', verifyToken, recordController.addRecord)
 
 module.exports = router;

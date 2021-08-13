@@ -1,36 +1,43 @@
 const mongoose = require('mongoose');
 
-const accountSchema = new mongoose.Schema({
-  name: {
+const recordSchema = new mongoose.Schema({
+  source : { 
     type:String,
     required:true,
-  },
-  color: { 
-    type:String,
   },
   type: { 
     type:String,
     required:true,
   }, 
-  typeIcon: { 
+  account: {
     type:String,
     required:true,
-  }, 
-  balance: {
-    type:Number,
   },
-  currency: {
+  date: {
     type:String,
     required:true
   },
-  lastUpdated: { 
-    type:Date,
-    default:Date.now()
+  amount: { 
+    type:Number,
+    required:true
+  },
+  category: {
+    type:String,
+  },
+  label: {
+    type:String,
+  },
+  note: {
+    type:String,
+  },
+  lastUpdated: {
+    type:String,
+    required:true
   },
   userId: {
     type:String,
     required:true
-  }
+  },
 })
 
 mongoose.set('toJSON', {
@@ -40,4 +47,4 @@ mongoose.set('toJSON', {
   }
 });
 
-module.exports = mongoose.model(`account`,accountSchema);
+module.exports = mongoose.model(`record`,recordSchema);

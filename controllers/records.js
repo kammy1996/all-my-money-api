@@ -182,7 +182,6 @@ exports.deleteLabel = (req,res) => {
 exports.addRecord = (req,res) => { 
   const record = req.body.record;
   const userId = req.user;
-  console.log(`record `, record)
 
   const newRecord = new Record({ 
     source : record.source,
@@ -200,6 +199,52 @@ exports.addRecord = (req,res) => {
   newRecord.save((err,record) => { 
     if(err)throw err; 
     res.status(200).json(record);
+  })
+}
+
+exports.getRecords = (req,res) => { 
+  const userId = req.user;
+
+  Record.find({ userId : userId}, (err,records) => { 
+    if(err)throw err; 
+    res.status(200).json(records)
+  })
+}
+
+exports.updateRecord =(req,res) => { 
+  const record = req.body.record;
+  const recordId = req.query.id;
+  const userId = req.user;
+
+  Record.findOneAndUpdate({userId: userId, _id : recordId}, {
+        source : record.source,
+        type : record.type,
+        account: record.account,
+        date:record.date,
+        amount:record.amount,
+        category : record.category,
+        label:record.label,
+        note:record.note,
+        lastUpdated: Date.now(),
+    },(err,docs) => {
+    if(err) throw err; 
+    if(docs) { 
+      Record.findOne({_id:docs._id},(err,record) => {  
+        if(err) throw err;
+        res.status(201).json(record);
+      })
+    }
+    
+  })  
+} 
+
+exports.deleteRecord = (req,res) => { 
+  const recordId = req.query.id;
+  const userId = req.user;
+
+  Record.deleteOne({userId:userId, _id : recordId}, (err,docs) => {
+    if(err)throw err; 
+    res.status(201).json(docs)
   })
 }
 

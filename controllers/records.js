@@ -2,6 +2,7 @@ const Account = require('../models/schema/records/account');
 const Category = require('../models/schema/records/category');
 const Label = require('../models/schema/records/label');
 const Record = require('../models/schema/records/record');
+const moment = require('moment');
 
 
 
@@ -192,7 +193,6 @@ exports.addRecord = (req,res) => {
     category : record.category,
     label:record.label,
     note:record.note,
-    lastUpdated: Date.now(),
     userId:userId
   })
 
@@ -202,10 +202,27 @@ exports.addRecord = (req,res) => {
   })
 }
 
-exports.getRecords = (req,res) => { 
+exports.getTotalRecords = (req,res) => { 
   const userId = req.user;
 
   Record.find({ userId : userId}, (err,records) => { 
+    if(err)throw err; 
+    res.status(200).json(records.length)
+  })
+}
+
+exports.getRecords = (req,res) => { 
+  const userId = req.user;
+  const page = req.query.page;
+  const perPage = parseInt(req.query.perPage);
+  let offset = (page * perPage) - perPage;
+  let order = req.query.order;
+
+  Record.find({ userId : userId})
+    .sort({_id : order})
+    .skip(offset)
+    .limit(perPage)
+    .exec( (err,records) => { 
     if(err)throw err; 
     res.status(200).json(records)
   })

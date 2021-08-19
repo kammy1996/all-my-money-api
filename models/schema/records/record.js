@@ -31,8 +31,8 @@ const recordSchema = new mongoose.Schema({
     type:String,
   },
   lastUpdated: {
-    type:String,
-    required:true
+    type:Date,
+    default:Date.now()
   },
   userId: {
     type:String,

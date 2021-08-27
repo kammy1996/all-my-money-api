@@ -2,7 +2,7 @@ const Account = require('../models/schema/records/account');
 const Category = require('../models/schema/records/category');
 const Label = require('../models/schema/records/label');
 const Record = require('../models/schema/records/record');
-const moment = require('moment');
+
 
 
 
@@ -226,6 +226,63 @@ exports.getRecords = (req,res) => {
     if(err)throw err; 
     res.status(200).json(records)
   })
+}
+
+function makeObjectFromQuery(userId, query) {
+  //Converting Query into Object
+  var params = JSON.parse('{"' + query.replace(/&/g, '","').replace(/=/g,'":"') + '"}', function(key, value) { return key===""?value:decodeURIComponent(value) });
+  //Converting string into array if one type has more than one params
+  params.userId = userId;
+
+  //Delete keys which are empty array
+  Object.keys(params).forEach(key => { 
+    if(!params[key]) delete params[key]
+  })
+
+  Object.keys(params).forEach(key => { 
+      params[key] = params[key].split(',');
+      params[key] = {$in : params[key]}
+  })
+
+  return params;
+}
+
+
+exports.getTotalFilteredRecords = (req,res) => { 
+  const userId = req.user;
+  const query = req.query.query;
+
+  let params = makeObjectFromQuery(userId, query);
+    Record.find({
+      $and : [
+        params
+      ]
+    }).exec((err,records) => {
+      if(err)throw err; 
+      res.status(200).json(records.length);
+    })
+}
+
+exports.getFilteredRecords = async (req,res) => { 
+  const userId = req.user;
+  const query = req.query.query;
+  const page = req.query.page;
+  const perPage = parseInt(req.query.perPage);
+  let offset = (page * perPage) - perPage;
+
+  
+  let params = makeObjectFromQuery(userId, query);
+    Record.find({
+      $and : [
+        params
+      ]
+    }) 
+    .skip(offset)
+    .limit(perPage)
+    .exec((err,docs) => {
+      if(err)throw err; 
+      res.status(200).json(docs);
+    })
 }
 
 exports.updateRecord =(req,res) => { 

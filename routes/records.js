@@ -17,6 +17,8 @@ router.delete('/label', verifyToken, recordController.deleteLabel)
 router.post('/', verifyToken, recordController.addRecord)
 router.put('/', verifyToken, recordController.updateRecord)
 router.get('/total', verifyToken, recordController.getTotalRecords);
+router.get('/filtered', verifyToken, recordController.getFilteredRecords);
+router.get('/filtered/total', verifyToken, recordController.getTotalFilteredRecords);
 router.get('/', verifyToken, recordController.getRecords)
 router.delete('/', verifyToken, recordController.deleteRecord);
 

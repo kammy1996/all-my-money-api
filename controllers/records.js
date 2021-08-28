@@ -231,19 +231,18 @@ exports.getRecords = (req,res) => {
 function makeObjectFromQuery(userId, query) {
   //Converting Query into Object
   var params = JSON.parse('{"' + query.replace(/&/g, '","').replace(/=/g,'":"') + '"}', function(key, value) { return key===""?value:decodeURIComponent(value) });
-  //Converting string into array if one type has more than one params
   params.userId = userId;
 
-  //Delete keys which are empty array
-  Object.keys(params).forEach(key => { 
-    if(!params[key]) delete params[key]
-  })
-
+  //Make query object for mongoose to search
   Object.keys(params).forEach(key => { 
       params[key] = params[key].split(',');
-      params[key] = {$in : params[key]}
+      if(key == 'amount') {
+        params[key] = {$gte : params[key][0], $lte: params[key][1]}
+      } else { 
+        params[key] = {$in : params[key]}
+      }
   })
-
+  
   return params;
 }
 

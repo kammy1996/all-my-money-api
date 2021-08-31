@@ -185,6 +185,34 @@ exports.deleteLabel = (req, res) => {
   });
 };
 
+function updateAccountBalance(state,userId, type,account,amount) { 
+  Account.findOne({
+    userId: userId , _id: account
+ }).exec((err,account) => { 
+    if(err)throw err;
+    let balance = account.balance;
+
+    if(state == 'add' || state == 'update') {
+      if(type == 'income') {
+        balance += amount;
+      } else if(type == 'expense') {
+        balance -= amount
+      }
+    } else if(state == 'delete') {
+      if(type == 'income') {
+        balance -= amount;
+      } else if(type == 'expense') {
+        balance += amount
+      }
+    }
+    
+    Account.updateOne({userId: userId,_id: account},{balance : balance},(err,docs) => { 
+      if(err)throw err; 
+      console.log(`balance Updated`)
+    })
+  })
+}
+
 exports.addRecord = (req, res) => {
   const record = req.body.record;
   const userId = req.user;
@@ -203,6 +231,7 @@ exports.addRecord = (req, res) => {
 
   newRecord.save((err, record) => {
     if (err) throw err;
+    updateAccountBalance('add',userId, record.type,record.account, record.amount)
     res.status(200).json(record);
   });
 };
@@ -356,6 +385,7 @@ exports.updateRecord = (req, res) => {
       if (docs) {
         Record.findOne({ _id: docs._id }, (err, record) => {
           if (err) throw err;
+          updateAccountBalance('update',userId,record.type,record.account,record.amount)
           res.status(201).json(record);
         });
       }
@@ -367,8 +397,14 @@ exports.deleteRecord = (req, res) => {
   const recordId = req.query.id;
   const userId = req.user;
 
-  Record.deleteOne({ userId: userId, _id: recordId }, (err, docs) => {
-    if (err) throw err;
-    res.status(201).json(docs);
-  });
+  Record.findOne({userId:userId,_id : recordId},(err,record) => { 
+    if(err)throw err; 
+    
+    updateAccountBalance('delete',userId,record.type,record.account,record.amount)
+    let currentRecord = record;
+    Record.deleteOne({ userId: userId, _id: recordId }, (err) => {
+      if (err) throw err;
+      res.status(201).json(currentRecord);
+    });
+  })
 };

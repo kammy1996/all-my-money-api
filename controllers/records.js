@@ -2,6 +2,7 @@ const Account = require('../models/schema/records/account');
 const Category = require('../models/schema/records/category');
 const Label = require('../models/schema/records/label');
 const Record = require('../models/schema/records/record');
+const service = require('../services/records-common');
 
 exports.addAccount = (req, res) => {
   const account = req.body.account;
@@ -185,33 +186,7 @@ exports.deleteLabel = (req, res) => {
   });
 };
 
-function updateAccountBalance(state,userId, type,account,amount) { 
-  Account.findOne({
-    userId: userId , _id: account
- }).exec((err,account) => { 
-    if(err)throw err;
-    let balance = account.balance;
 
-    if(state == 'add' || state == 'update') {
-      if(type == 'income') {
-        balance += amount;
-      } else if(type == 'expense') {
-        balance -= amount
-      }
-    } else if(state == 'delete') {
-      if(type == 'income') {
-        balance -= amount;
-      } else if(type == 'expense') {
-        balance += amount
-      }
-    }
-    
-    Account.updateOne({userId: userId,_id: account},{balance : balance},(err,docs) => { 
-      if(err)throw err; 
-      console.log(`balance Updated`)
-    })
-  })
-}
 
 exports.addRecord = (req, res) => {
   const record = req.body.record;
@@ -231,7 +206,7 @@ exports.addRecord = (req, res) => {
 
   newRecord.save((err, record) => {
     if (err) throw err;
-    updateAccountBalance('add',userId, record.type,record.account, record.amount)
+    service.updateAccountBalance('add',userId, record.type,record.account, record.amount)
     res.status(200).json(record);
   });
 };
@@ -245,24 +220,11 @@ exports.getTotalRecords = (req, res) => {
   });
 };
 
-function makePaginationProps(page,itemsPerPage) {
-  let perPage = parseInt(itemsPerPage)
-  let offset = page * perPage - perPage;
-
-  //asked for All records
-  if(perPage < 0) {
-    offset = 0
-    perPage = 0
-  }
-
-  return {offset, perPage}
-}
-
 
 exports.getRecords = (req, res) => {
   const userId = req.user;
   let order = req.query.order;
-  let {offset,perPage} =  makePaginationProps(req.query.page,req.query.perPage)
+  let {offset,perPage} =  service.makePaginationProps(req.query.page,req.query.perPage)
 
   Record.find({ userId: userId })
     .sort({ _id: order })
@@ -274,28 +236,6 @@ exports.getRecords = (req, res) => {
     });
 };
 
-function makeObjectFromQuery(userId, query) {
-  //Converting Query into Object
-  var params = JSON.parse(
-    '{"' + query.replace(/&/g, '","').replace(/=/g, '":"') + '"}',
-    function (key, value) {
-      return key === '' ? value : decodeURIComponent(value);
-    }
-  );
-  params.userId = userId;
-
-  //Make query object for mongoose to search
-  Object.keys(params).forEach((key) => {
-    params[key] = params[key].split(',');
-    if (key == 'amount') {
-      params[key] = { $gte: params[key][0], $lte: params[key][1] };
-    } else {
-      params[key] = { $in: params[key] };
-    }
-  });
-
-  return params;
-}
 
 
 
@@ -303,7 +243,7 @@ exports.getTotalFilteredRecords = (req, res) => {
   const userId = req.user;
   const query = req.query.query;
 
-  let params = makeObjectFromQuery(userId, query);
+  let params = service.makeObjectFromQuery(userId, query);
   Record.find({
     $and: [params],
   }).exec((err, records) => {
@@ -327,7 +267,7 @@ exports.getTotalRecordsAsPerDate = (req, res) => {
 
 exports.getRecordsAsPerDate = (req, res) => {
   const userId = req.user;
-  let {offset,perPage} =  makePaginationProps(req.query.page,req.query.perPage)
+  let {offset,perPage} =  service.makePaginationProps(req.query.page,req.query.perPage)
 
   let order = req.query.order;
   let startDate = req.query.startDate;
@@ -348,9 +288,9 @@ exports.getRecordsAsPerDate = (req, res) => {
 exports.getFilteredRecords = async (req, res) => {
   const userId = req.user;
   const query = req.query.query;
-  let {offset,perPage} =  makePaginationProps(req.query.page,req.query.perPage)
+  let {offset,perPage} =  service.makePaginationProps(req.query.page,req.query.perPage)
 
-  let params = makeObjectFromQuery(userId, query);
+  let params = service.makeObjectFromQuery(userId, query);
   Record.find({
     $and: [params],
   })
@@ -385,7 +325,7 @@ exports.updateRecord = (req, res) => {
       if (docs) {
         Record.findOne({ _id: docs._id }, (err, record) => {
           if (err) throw err;
-          updateAccountBalance('update',userId,record.type,record.account,record.amount)
+          service.updateAccountBalance('update',userId,record.type,record.account,record.amount)
           res.status(201).json(record);
         });
       }
@@ -399,8 +339,7 @@ exports.deleteRecord = (req, res) => {
 
   Record.findOne({userId:userId,_id : recordId},(err,record) => { 
     if(err)throw err; 
-    
-    updateAccountBalance('delete',userId,record.type,record.account,record.amount)
+    service.updateAccountBalance('delete',userId,record.type,record.account,record.amount)
     let currentRecord = record;
     Record.deleteOne({ userId: userId, _id: recordId }, (err) => {
       if (err) throw err;

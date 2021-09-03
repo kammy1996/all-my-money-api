@@ -30,4 +30,4 @@ mongoose.set('toJSON', {
   }
 });
 
-module.exports = mongoose.model(`label`,labelSchema);
+module.exports = mongoose.model(`RecordLabel`,labelSchema);

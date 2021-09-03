@@ -40,4 +40,4 @@ mongoose.set('toJSON', {
   }
 });
 
-module.exports = mongoose.model(`account`,accountSchema);
+module.exports = mongoose.model(`RecordAccount`,accountSchema);

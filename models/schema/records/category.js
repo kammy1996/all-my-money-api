@@ -30,4 +30,4 @@ mongoose.set('toJSON', {
   }
 });
 
-module.exports = mongoose.model(`category`,categorySchema);
+module.exports = mongoose.model(`RecordCategory`,categorySchema);
